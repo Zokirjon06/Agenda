@@ -40,6 +40,7 @@ class _HomeScreenHivePageState extends State<HomeScreenHivePage> {
       await Hive.openBox<TaskModelHive>('tasksHiveBox');
       await Hive.openBox<TaskTypeModelHive>('taskTypesHiveBox');
       await Hive.openBox<DebtsModel>('debtsBox');
+      await Hive.openBox<DebtsDetailModel>('debtsDetailBox');
     } catch (e) {
       debugPrint('Error initializing Hive boxes: $e');
     }
@@ -142,13 +143,12 @@ class _HomeScreenHivePageState extends State<HomeScreenHivePage> {
               Gap(5.h),
               _debtsCard(),
               Gap(5.h),
-             _taskCard(),
-             Gap(5.h),
+              _taskCard(),
+              Gap(5.h),
             ],
           ),
         ),
       ),
-      
     );
   }
 
@@ -244,216 +244,218 @@ class _HomeScreenHivePageState extends State<HomeScreenHivePage> {
   }
 
   Widget _debtsCard() {
-    // List<DebtsModel> debts = getUserDebtsFromHive();
-    // debts.sort((b, a) => a.date!.compareTo(b.date!));
     return ValueListenableBuilder(
-       valueListenable: Hive.box<DebtsModel>('debtsBox').listenable(),
-    builder: (context, Box<DebtsModel> box, _) {
-      List<DebtsModel> debts = box.values.toList();
-      debts.sort((b, a) => a.date!.compareTo(b.date!));
-      return Column(
-        children: [
-          if (debts.isEmpty)
-            Card(
-              elevation: 3,
-              color: const Color.fromARGB(255, 2, 92, 165),
-              shadowColor: Colors.black,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Gap(10.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        valueListenable: Hive.box<DebtsModel>('debtsBox').listenable(),
+        builder: (context, Box<DebtsModel> box, _) {
+          List<DebtsModel> debts = box.values.toList();
+          debts.sort((b, a) => a.date!.compareTo(b.date!));
+          return Column(
+            children: [
+              if (debts.isEmpty)
+                Card(
+                  elevation: 3,
+                  color: const Color.fromARGB(255, 2, 92, 165),
+                  shadowColor: Colors.black,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Qarzlar ro\'yxati',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => AddDebtPage(
-                                        language: langItem,
-                                      )));
-                            },
-                            icon: Icon(
-                              Icons.person_add_alt_1,
-                              color: Colors.white,
-                              size: 30.sp,
-                            )),
-                      ],
-                    ),
-                    const Divider(
-                      color: Colors.black12,
-                      height: 1,
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics:
-                          const NeverScrollableScrollPhysics(), // Prevent scrolling
-                      itemCount: 2,
-                      itemBuilder: (context, index) => ListTile(
-                          leading: Container(
-                            width: 55.w,
-                            height: 55.h,
-                            decoration: const BoxDecoration(
-                              color: Colors.grey,
-                              shape: BoxShape.circle,
+                        Gap(10.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Qarzlar ro\'yxati',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.bold),
                             ),
-                          ),
-                          title: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              height: 13.h,
-                              width: MediaQuery.of(context).size.width * 0.2,
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                            ),
-                          ),
-                          subtitle: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                                height: 13.h,
-                                width: MediaQuery.of(context).size.width * 0.4,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey,
-                                  borderRadius: BorderRadius.circular(8.r),
+                            IconButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => AddDebtPage(
+                                            language: langItem,
+                                          )));
+                                },
+                                icon: Icon(
+                                  Icons.person_add_alt_1,
+                                  color: Colors.white,
+                                  size: 30.sp,
                                 )),
-                          ),
-      
-                          // Gap(10.w),
-                          trailing: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                height: 13.h,
-                                width: MediaQuery.of(context).size.width * 0.12,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey,
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                              ),
-                              Gap(8.h),
-                              Container(
-                                height: 13.h,
-                                width: MediaQuery.of(context).size.width * 0.12,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey,
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                              ),
-                            ],
-                          )
-                          // ],
-                          ),
-                    ),
-                    const Divider(
-                      color: Colors.black12,
-                      height: 1,
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => DebtsListPage(
-                                  language: langItem,
-                                )));
-                      },
-                      child: Text(
-                        "Hammasini ko'rish",
-                        style: TextStyle(
-                            color: Colors.blue[100],
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          if (debts.isNotEmpty)
-            Card(
-              elevation: 3,
-              color: const Color.fromARGB(255, 2, 92, 165),
-              shadowColor: Colors.black,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Gap(10.h),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Qarzlar ro\'yxati',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22.sp,
-                              fontWeight: FontWeight.bold),
+                          ],
                         ),
-                        IconButton(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => AddDebtPage(
-                                        language: langItem,
-                                      )));
-                            },
-                            icon: Icon(
-                              Icons.person_add_alt_1,
-                              color: Colors.white,
-                              size: 30.sp,
-                            )),
+                        const Divider(
+                          color: Colors.black12,
+                          height: 1,
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics:
+                              const NeverScrollableScrollPhysics(), // Prevent scrolling
+                          itemCount: 2,
+                          itemBuilder: (context, index) => ListTile(
+                              leading: Container(
+                                width: 55.w,
+                                height: 55.h,
+                                decoration: const BoxDecoration(
+                                  color: Colors.grey,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              title: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  height: 13.h,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.2,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey,
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                ),
+                              ),
+                              subtitle: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                    height: 13.h,
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.4,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(8.r),
+                                    )),
+                              ),
+
+                              // Gap(10.w),
+                              trailing: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    height: 13.h,
+                                    width: MediaQuery.of(context).size.width *
+                                        0.12,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(8.r),
+                                    ),
+                                  ),
+                                  Gap(8.h),
+                                  Container(
+                                    height: 13.h,
+                                    width: MediaQuery.of(context).size.width *
+                                        0.12,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(8.r),
+                                    ),
+                                  ),
+                                ],
+                              )
+                              // ],
+                              ),
+                        ),
+                        const Divider(
+                          color: Colors.black12,
+                          height: 1,
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => DebtsListPage(
+                                      language: langItem,
+                                    )));
+                          },
+                          child: Text(
+                            "Hammasini ko'rish",
+                            style: TextStyle(
+                                color: Colors.blue[100],
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
                       ],
                     ),
-                    Gap(10.h),
-                    const Divider(
-                      color: Colors.black12,
-                      height: 1,
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: debts.length < 5 ? debts.length : 5,
-                      itemBuilder: (context, index) {
-                        return _builUserDebtsItem(
-                          debts[index],
-                        );
-                      },
-                    ),
-                    const Divider(
-                      color: Colors.black12,
-                      height: 1,
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => DebtsListPage(
-                                  language: langItem,
-                                )));
-                      },
-                      child: Text(
-                        "Hammasini ko'rish",
-                        style: TextStyle(
-                            color: Colors.blue[100],
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            )
-        ],
-      );
-  });
+              if (debts.isNotEmpty)
+                Card(
+                  elevation: 3,
+                  color: const Color.fromARGB(255, 2, 92, 165),
+                  shadowColor: Colors.black,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Gap(10.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Qarzlar ro\'yxati',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            IconButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => AddDebtPage(
+                                            language: langItem,
+                                          )));
+                                },
+                                icon: Icon(
+                                  Icons.person_add_alt_1,
+                                  color: Colors.white,
+                                  size: 30.sp,
+                                )),
+                          ],
+                        ),
+                        Gap(10.h),
+                        const Divider(
+                          color: Colors.black12,
+                          height: 1,
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: debts.length < 5 ? debts.length : 5,
+                          itemBuilder: (context, index) {
+                            return _builUserDebtsItem(
+                              debts[index],
+                            );
+                          },
+                        ),
+                        const Divider(
+                          color: Colors.black12,
+                          height: 1,
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => DebtsListPage(
+                                      language: langItem,
+                                    )));
+                          },
+                          child: Text(
+                            "Hammasini ko'rish",
+                            style: TextStyle(
+                                color: Colors.blue[100],
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+            ],
+          );
+        });
   }
 
   Widget _builUserDebtsItem(
@@ -470,12 +472,11 @@ class _HomeScreenHivePageState extends State<HomeScreenHivePage> {
             contentPadding: EdgeInsets.symmetric(
                 horizontal: 0.w, vertical: 0), // Ichki bo'sh joyni kamaytirish
             onTap: () {
-              
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => DebtDetailPage(
-                              language: widget.language,
-                              debt: debt,
-                              )));
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => DebtDetailPage(
+                        language: widget.language,
+                        debt: debt,
+                      )));
             },
             leading: CircleAvatar(
               radius: 30.r,
@@ -527,201 +528,201 @@ class _HomeScreenHivePageState extends State<HomeScreenHivePage> {
     );
   }
 
-
-   Widget _taskCard() {
-    // Hive.openBox<TaskModelHive>('tasksHiveBox');
-    //  List<TaskModelHive> tasks = getAllTasksFromHive();
-    // tasks.sort((b, a) => a.date.compareTo(b.date));
+  Widget _taskCard() {
     return ValueListenableBuilder(
-       valueListenable: Hive.box<TaskModelHive>('tasksHiveBox').listenable(),
-    builder: (context, Box<TaskModelHive> box, _) {
-      List<TaskModelHive> tasks = box.values.toList();
-      tasks.sort((b, a) => a.date.compareTo(b.date));
+        valueListenable: Hive.box<TaskModelHive>('tasksHiveBox').listenable(),
+        builder: (context, Box<TaskModelHive> box, _) {
+          List<TaskModelHive> tasks = box.values.toList();
+          tasks.sort((b, a) => a.date.compareTo(b.date));
           return Column(
             children: [
-              if(tasks.isEmpty) Card(
-                elevation: 3,
-                color: const Color.fromARGB(255, 2, 92, 165),
-                shadowColor: Colors.black,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Gap(10.h),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Vazifalar ro\'yxati',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22.sp,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          IconButton(
-                              onPressed: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => AddTaskHivePage(
-                                          language: langItem,
-                                        )));
-                              },
-                              icon: Icon(
-                                Icons.playlist_add_rounded,
-                                color: Colors.white,
-                                size: 40.sp,
-                              )),
-                        ],
-                      ),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics:
-                            const NeverScrollableScrollPhysics(), // Prevent scrolling
-                        itemCount: 2,
-                        itemBuilder: (context, index) => Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.r),
-                              border: Border.all(color: Colors.grey, width: 3.w)),
-                          margin: EdgeInsets.symmetric(vertical: 7.h),
-                          child: ListTile(
-                            leading: Container(
-                              width: 55.w,
-                              height: 55.h,
-                              decoration: const BoxDecoration(
-                                color: Colors.grey,
-                                shape: BoxShape.circle,
-                              ),
+              if (tasks.isEmpty)
+                Card(
+                  elevation: 3,
+                  color: const Color.fromARGB(255, 2, 92, 165),
+                  shadowColor: Colors.black,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Gap(10.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Vazifalar ro\'yxati',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.bold),
                             ),
-                            title: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
-                                height: 13.h,
-                                width: MediaQuery.of(context).size.width * 0.4,
-                                decoration: BoxDecoration(
+                            IconButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => AddTaskHivePage(
+                                            language: langItem,
+                                          )));
+                                },
+                                icon: Icon(
+                                  Icons.playlist_add_rounded,
+                                  color: Colors.white,
+                                  size: 40.sp,
+                                )),
+                          ],
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics:
+                              const NeverScrollableScrollPhysics(), // Prevent scrolling
+                          itemCount: 2,
+                          itemBuilder: (context, index) => Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10.r),
+                                border:
+                                    Border.all(color: Colors.grey, width: 3.w)),
+                            margin: EdgeInsets.symmetric(vertical: 7.h),
+                            child: ListTile(
+                              leading: Container(
+                                width: 55.w,
+                                height: 55.h,
+                                decoration: const BoxDecoration(
                                   color: Colors.grey,
-                                  borderRadius: BorderRadius.circular(8.r),
+                                  shape: BoxShape.circle,
                                 ),
                               ),
-                            ),
-                            subtitle: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
+                              title: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
                                   height: 13.h,
-                                  width: MediaQuery.of(context).size.width * 0.2,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.4,
                                   decoration: BoxDecoration(
                                     color: Colors.grey,
                                     borderRadius: BorderRadius.circular(8.r),
-                                  )),
-                            ),
-                            trailing: Icon(
-                              Icons.circle,
-                              color: Colors.grey,
-                              size: 23.sp,
+                                  ),
+                                ),
+                              ),
+                              subtitle: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                    height: 13.h,
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.2,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(8.r),
+                                    )),
+                              ),
+                              trailing: Icon(
+                                Icons.circle,
+                                color: Colors.grey,
+                                size: 23.sp,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Gap(10.h),
-                      const Divider(
-                        color: Colors.black12,
-                        height: 1,
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => TaskListHiveScreenPage(
-                                    language: langItem,
-                                    lightMode: false,
-                                  )));
-                        },
-                        child: Text(
-                          "Hammasini ko'rish",
-                          style: TextStyle(
-                              color: Colors.blue[100],
-                              fontSize: 20.sp,
-                              fontWeight: FontWeight.w600),
+                        Gap(10.h),
+                        const Divider(
+                          color: Colors.black12,
+                          height: 1,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if(tasks.isNotEmpty)  Card(
-            elevation: 3,
-            color: const Color.fromARGB(255, 2, 92, 165),
-            shadowColor: Colors.black,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 14.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Gap(10.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Vazifalar ro\'yxati',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22.sp,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      
-                      IconButton(
+                        TextButton(
                           onPressed: () {
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => AddTaskHivePage(
+                                builder: (context) => TaskListHiveScreenPage(
                                       language: langItem,
+                                      lightMode: false,
                                     )));
                           },
-                          icon: Icon(
-                            Icons.playlist_add_rounded,
-                            color: Colors.white,
-                            size: 40.sp,
-                          )),
-                    ],
-                  ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics:
-                        const NeverScrollableScrollPhysics(), // Prevent scrolling
-                    itemCount: tasks.length < 5 ? tasks.length : 5,
-                    itemBuilder: (context, index) {
-                      return _buildTaskCardItem(tasks[index]);
-                    },
-                  ),
-                  Gap(12.h),
-                  const Divider(
-                    color: Colors.black12,
-                    height: 1,
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => TaskListHiveScreenPage(
-                                language: langItem,
-                                lightMode: false,
-                              )));
-                    },
-                    child: Text(
-                      "Hammasini ko'rish",
-                      style: TextStyle(
-                          color: Colors.blue[100],
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w600),
+                          child: Text(
+                            "Hammasini ko'rish",
+                            style: TextStyle(
+                                color: Colors.blue[100],
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
+                ),
+              if (tasks.isNotEmpty)
+                Card(
+                  elevation: 3,
+                  color: const Color.fromARGB(255, 2, 92, 165),
+                  shadowColor: Colors.black,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Gap(10.h),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Vazifalar ro\'yxati',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            IconButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => AddTaskHivePage(
+                                            language: langItem,
+                                          )));
+                                },
+                                icon: Icon(
+                                  Icons.playlist_add_rounded,
+                                  color: Colors.white,
+                                  size: 40.sp,
+                                )),
+                          ],
+                        ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics:
+                              const NeverScrollableScrollPhysics(), // Prevent scrolling
+                          itemCount: tasks.length < 5 ? tasks.length : 5,
+                          itemBuilder: (context, index) {
+                            return _buildTaskCardItem(tasks[index]);
+                          },
+                        ),
+                        Gap(12.h),
+                        const Divider(
+                          color: Colors.black12,
+                          height: 1,
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => TaskListHiveScreenPage(
+                                      language: langItem,
+                                      lightMode: false,
+                                    )));
+                          },
+                          child: Text(
+                            "Hammasini ko'rish",
+                            style: TextStyle(
+                                color: Colors.blue[100],
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
-          );});
-   }      
+          );
+        });
+  }
 
-   
-   Widget _buildTaskCardItem(
+  Widget _buildTaskCardItem(
     TaskModelHive task,
   ) {
     return Column(
@@ -772,6 +773,4 @@ class _HomeScreenHivePageState extends State<HomeScreenHivePage> {
       ],
     );
   }
-
-
 }

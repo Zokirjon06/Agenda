@@ -12,6 +12,7 @@ import 'package:agenda/layers/presentation/pages/style/app_colors.dart';
 import 'package:agenda/layers/presentation/widget/my_floatinAcshinButton.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
 class DebtsListPage extends StatefulWidget {
@@ -174,81 +175,73 @@ class _DebtsListPageState extends State<DebtsListPage> {
   }
 }
 
-class DebtsItem extends StatefulWidget {
+
+// -----------------------------------------------------------
+// Debts Item
+// -----------------------------------------------------------
+class DebtsItem extends StatelessWidget {
   final String language;
   final bool lightMode;
   final bool random;
   final String? debt;
 
-  const DebtsItem(
-      {super.key,
-      required this.language,
-      required this.lightMode,
-      required this.random,
-      this.debt});
-
-  @override
-  State<DebtsItem> createState() => _DebtsItemState();
-}
-
-class _DebtsItemState extends State<DebtsItem> {
-  List<DebtsModel> getDebtsFromHive() {
-    // Hive.openBox<DebtsModel>('debtsBox');
-    final box = Hive.box<DebtsModel>('debtsBox');
-    return box.values.toList();
-  }
-
-  String getErrorText() {
-    switch (widget.language) {
-      case 'eng':
-        return 'Error: ';
-      case 'rus':
-        return 'Ошибка: ';
-      case 'uzb':
-        return 'Xato: ';
-      default:
-        return 'Error: ';
-    }
-  }
+  const DebtsItem({
+    super.key,
+    required this.language,
+    required this.lightMode,
+    required this.random,
+    this.debt,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return _buildUserDebts();
-  }
+    final box = Hive.box<DebtsModel>('debtsBox');
 
-  Widget _buildUserDebts() {
-    List<DebtsModel> userDebts = getDebtsFromHive();
+    return ValueListenableBuilder(
+      valueListenable: box.listenable(),
+      builder: (context, Box<DebtsModel> debtsBox, _) {
+        List<DebtsModel> userDebts = debtsBox.values.toList();
 
-    if (userDebts.isEmpty) {
-      return const Center(
-          child: Text("Ma'lumot yo‘q", style: TextStyle(color: Colors.white)));
-    }
+        if (userDebts.isEmpty) {
+          return const Center(
+            child: Text(
+              "Ma'lumot yo‘q",
+              style: TextStyle(color: Colors.white),
+            ),
+          );
+        }
 
-    // Tartiblash (yangi qo‘shilganlar yuqorida bo‘lsin)
-    userDebts.sort((b, a) => a.date!.compareTo(b.date!));
+        // Tartiblash (yangi qo‘shilganlar yuqorida bo‘lsin)
+        userDebts.sort((b, a) => a.date!.compareTo(b.date!));
 
-    List<DebtsModel> filteredDebtGet =
-        userDebts.where((debt) => debt.debt == 'get').toList();
-    List<DebtsModel> filteredDebtOwe =
-        userDebts.where((debt) => debt.debt == 'owe').toList();
+        List<DebtsModel> filteredDebtGet =
+            userDebts.where((d) => d.debt == 'get').toList();
+        List<DebtsModel> filteredDebtOwe =
+            userDebts.where((d) => d.debt == 'owe').toList();
 
-    List<DebtsModel> displayedDebts = widget.debt == 'debtors'
-        ? filteredDebtGet
-        : widget.debt == 'userDebts'
-            ? filteredDebtOwe
-            : userDebts;
+        List<DebtsModel> displayedDebts = debt == 'debtors'
+            ? filteredDebtGet
+            : debt == 'userDebts'
+                ? filteredDebtOwe
+                : userDebts;
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: displayedDebts.length,
-      itemBuilder: (context, index) {
-        return _builUserDebtsItem1(displayedDebts[index], index != 0);
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: displayedDebts.length,
+          itemBuilder: (context, index) {
+            return _buildUserDebtsItem(
+              context,
+              displayedDebts[index],
+              index != 0,
+            );
+          },
+        );
       },
     );
   }
 
-  Widget _builUserDebtsItem1(DebtsModel debts, bool tr) {
+  Widget _buildUserDebtsItem(BuildContext context, DebtsModel debts, bool showDivider) {
     final int hash = debts.name.hashCode;
     final randomColor = Colors.primaries[hash % Colors.primaries.length];
 
@@ -256,7 +249,7 @@ class _DebtsItemState extends State<DebtsItem> {
       key: ValueKey(debts.docId),
       direction: DismissDirection.endToStart,
       confirmDismiss: (direction) async {
-        showDebtDismissibleHive(context, widget.language, debts, debts.key);
+        showDebtDismissibleHive(context, language, debts, debts.key);
         return false;
       },
       background: Container(
@@ -267,14 +260,14 @@ class _DebtsItemState extends State<DebtsItem> {
       ),
       child: ListTile(
         minTileHeight: 79.h,
-        minVerticalPadding: 0,
-        contentPadding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 0),
+        contentPadding: EdgeInsets.symmetric(horizontal: 10.w),
         onTap: () {
-           Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => DebtDetailPage(
-                              language: widget.language,
-                              debt: debts,
-                              )));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  DebtDetailPage(language: language, debt: debts),
+            ),
+          );
         },
         leading: CircleAvatar(
           radius: 30.r,
@@ -296,18 +289,20 @@ class _DebtsItemState extends State<DebtsItem> {
         ),
         subtitle: debts.money != 0
             ? Text(
-                '${widget.language == 'eng' ? 'Debt Amount' : widget.language == 'rus' ? "Сумма долга" : 'Qarz Miqdori'}: ${debts.money.toMoney()} so\'m',
+                '${language == 'eng' ? 'Debt Amount' : language == 'rus' ? "Сумма долга" : 'Qarz Miqdori'}: ${debts.money.toMoney()} so\'m',
                 style: TextStyle(
-                    fontSize: 17.sp,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white38),
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white38,
+                ),
               )
-            : Text(
+            : const Text(
                 'Qarz: to\'landi',
                 style: TextStyle(
-                    fontSize: 17.sp,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.green),
+                  fontSize: 17,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.green,
+                ),
               ),
         trailing: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -342,10 +337,10 @@ class _DebtsItemState extends State<DebtsItem> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (tr)
+        if (showDivider)
           Padding(
             padding: const EdgeInsets.only(bottom: 0),
-            child: Dividers(lightMode: widget.lightMode, inden: true),
+            child: Dividers(lightMode: lightMode, inden: true),
           ),
         listTile,
       ],
@@ -353,6 +348,11 @@ class _DebtsItemState extends State<DebtsItem> {
   }
 }
 
+
+
+// ---------------------------------------------------
+// DebtsCalendarHive
+// ---------------------------------------------------
 class DebtsCalendarHive extends StatefulWidget {
   final String language;
   final bool lightMode;
@@ -493,6 +493,11 @@ class _DebtsCalendarHiveState extends State<DebtsCalendarHive> {
   }
 }
 
+
+
+// ---------------------------------------------------
+// DebtDismissibleHive
+// ---------------------------------------------------
 class DebtDismissibleHive extends StatefulWidget {
   final String language;
   final DebtsModel debts;
@@ -553,31 +558,31 @@ class _DebtDismissibleHiveState extends State<DebtDismissibleHive> {
         : widget.debts.money! - inputAmount;
   }
 
+ 
+  
   Future<void> _submit() async {
-    final detail = DebtsDetailModel(
-      fulName: widget.debts.name,
-      date: _date,
-      detailComment: _commentController.text,
-      detailAmount: selectedAction == 'increase'
-          ? num.tryParse(_amountController.text.pickOnlyNumber())
-          : 0,
-      removDetailAmount: selectedAction == 'decrease'
-          ? num.tryParse(_amountController.text.pickOnlyNumber())
-          : 0,
-    );
+  final detail = DebtsDetailModel(
+    fulName: widget.debts.name,
+    date: _date,
+    detailComment: _commentController.text,
+    detailAmount: selectedAction == 'increase'
+        ? num.tryParse(_amountController.text.pickOnlyNumber())
+        : 0,
+    removDetailAmount: selectedAction == 'decrease'
+        ? num.tryParse(_amountController.text.pickOnlyNumber())
+        : 0,
+  );
 
-    final debtsDetailBox =
-        await Hive.openBox<DebtsDetailModel>('debtsDetailBox');
-    await debtsDetailBox.add(detail);
-  }
+  // Agar detail null bo‘lsa, yangi ro‘yxat yaratamiz
+  widget.debts.detail ??= [];
 
-  // Future<void> _saveChanges() async {
-  //   if (_totalMoney == null) return;
+  widget.debts.detail!.add(detail);
 
-  //   final debtsBox = await Hive.openBox<DebtsModel>('debtsBox');
-  //   final updatedDebt = widget.debts..money = _totalMoney!;
-  //   await debtsBox.putAt(updatedDebt.key, updatedDebt);
-  // }
+  // Keyinchalik Hive’da saqlash uchun
+  await widget.debts.save();
+}
+
+
   Future<void> _saveChanges() async {
     if (_totalMoney == null) return;
 

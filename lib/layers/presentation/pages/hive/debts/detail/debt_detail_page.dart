@@ -1,5 +1,6 @@
 import 'package:agenda/layers/domain/models/hive_model/debts/debts_model.dart';
 import 'package:agenda/layers/presentation/extension/extension.dart';
+import 'package:agenda/layers/presentation/helpers/input_formatter.dart';
 import 'package:agenda/layers/presentation/pages/style/app_colors.dart';
 import 'package:agenda/layers/presentation/widget/appBar_leading_icon.dart';
 import 'package:agenda/layers/presentation/widget/divders.dart';
@@ -15,10 +16,7 @@ import 'package:intl/intl.dart';
 class DebtDetailPage extends StatefulWidget {
   final String language;
   final DebtsModel debt;
-  const DebtDetailPage(
-      {super.key,
-      required this.language,
-      required this.debt});
+  const DebtDetailPage({super.key, required this.language, required this.debt});
 
   @override
   State<DebtDetailPage> createState() => _DebtDetailPageState();
@@ -26,31 +24,8 @@ class DebtDetailPage extends StatefulWidget {
 
 class _DebtDetailPageState extends State<DebtDetailPage> {
   late final DateFormat _allDate;
-  List<DebtsDetailModel> detail = [];
 
-  // Stream<List<DebtsDetailModel>> getDebtorsListStream() {
-  //   // final box = Hive.box<DebtsModel>('debtsBox');
-  //   // final box = Hive.box<DebtsDetailModel>("debtsDetailBox");
-  //   return Hive.box<DebtsDetailModel>("debtsDetailBox").get(widget.debts).save();
-  // }
-
- List<DebtsDetailModel> getDebtorsListStream() {
-  final box = Hive.box<DebtsDetailModel>("debtsDetailBox");
-
-  // Faqat ushbu qarzga tegishli detallari filter qilinadi
-  final List<DebtsDetailModel> filtered = box.values
-      .where((element) => element.fulName == widget.debt.name)
-      .toList();
-  return filtered;
-}
-
-void loadDetails() {
-  setState(() {
-    detail = getDebtorsListStream();
-  });
-}
-
-
+  // Init state
   @override
   void initState() {
     _allDate = DateFormat.yMMMMd(widget.language == 'eng'
@@ -58,66 +33,67 @@ void loadDetails() {
         : widget.language == 'rus'
             ? 'ru_RU'
             : 'uz_UZ');
-           loadDetails;
     setState(() {});
     super.initState();
   }
 
+  // Delete
   Future<void> _deleteDebtor() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-          backgroundColor: AppColors.another,
-          title: Text(
-            widget.language == 'eng'
-                ? 'Delete Debt'
-                : widget.language == 'rus'
-                    ? 'Удалить задачу'
-                    : 'Qarzni o\'chirish',
-            style: const TextStyle(color: Colors.white),
-          ),
-          content: Text(
-            widget.language == 'eng'
-                ? 'Are you sure you want to delete this debt?'
-                : widget.language == 'rus'
-                    ? 'Вы уверены, что хотите удалить эту задачу?'
-                    : 'Haqiqatan ham bu qarzni o\'chirmoqchimisiz?',
-            style: const TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                widget.language == 'eng'
-                    ? 'Cancel'
-                    : widget.language == 'rus'
-                        ? 'Отмена'
-                        : 'Bekor qilish',
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(
-                widget.language == 'eng'
-                    ? 'Delete'
-                    : widget.language == 'rus'
-                        ? 'Удалить'
-                        : 'O\'chirish',
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
+        backgroundColor: AppColors.another,
+        title: Text(
+          widget.language == 'eng'
+              ? 'Delete Debt'
+              : widget.language == 'rus'
+                  ? 'Удалить задачу'
+                  : 'Qarzni o\'chirish',
+          style: const TextStyle(color: Colors.white),
         ),
+        content: Text(
+          widget.language == 'eng'
+              ? 'Are you sure you want to delete this debt?'
+              : widget.language == 'rus'
+                  ? 'Вы уверены, что хотите удалить эту задачу?'
+                  : 'Haqiqatan ham bu qarzni o\'chirmoqchimisiz?',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              widget.language == 'eng'
+                  ? 'Cancel'
+                  : widget.language == 'rus'
+                      ? 'Отмена'
+                      : 'Bekor qilish',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              widget.language == 'eng'
+                  ? 'Delete'
+                  : widget.language == 'rus'
+                      ? 'Удалить'
+                      : 'O\'chirish',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
     );
+    
 
+    // If the user confirmed the deletion
     if (confirmed == true) {
       try {
-
         // delete debtor
         // final box = Hive.box<DebtsDetailModel>("debtsDetailBox");
         // if (box.values.contains(widget.debt)) {
-          // box.delete(widget.debt.detail);
+        // box.delete(widget.debt.detail);
         // }
 
         //
@@ -138,7 +114,9 @@ void loadDetails() {
       }
     }
   }
+  
 
+  // Show snackbar
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -179,7 +157,7 @@ void loadDetails() {
         ),
       ),
       floatingActionButton: MyFloatinacshinbutton(
-        onPressed: () => _showBottomSheet(context),
+        onPressed: () => showShowDialogHive(context, widget.language, widget.debt),
       ),
       backgroundColor: AppColors.standartColor,
       body: Column(
@@ -257,8 +235,7 @@ void loadDetails() {
   }
 
   Widget _getDebtorDetail() {
-    // final debtBool = detail.contains(widget.debt.detail);
-    List<DebtsDetailModel> debt = detail;
+    List<DebtsDetailModel> debt = widget.debt.detail ?? [];
     if (debt.isEmpty) {
       return const Center();
     }
@@ -411,75 +388,299 @@ void loadDetails() {
       ],
     );
   }
+}
 
-  // --------------------------------------------------
-  // --------------------------------------------------
-  // --------------------------------------------------
-  // _showBottomSheet---------------------------------
-  // --------------------------------------------------
-  // --------------------------------------------------
-  // --------------------------------------------------
-  void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      // showDragHandle: true,
-      shape: RoundedRectangleBorder(
-        // borderRadius: BorderRadius.all(Radius.zero),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
-      ),
-      backgroundColor: AppColors.homeBackgroundColor,
-      builder: (BuildContext context) {
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Gap(15.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      // backgroundColor: const Color(0xffF5F5F5),
-                      backgroundColor: Colors.green),
-                  child: Text(
-                    'Qarzning oshishi',
-                    style: TextStyle(
-                      color: Colors.white,
-                      // color: const Color(0xff0C75AF),
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              Gap(15.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      // backgroundColor: const Color(0xff0C75AF),
-                      backgroundColor: Colors.red),
-                  child: Text(
-                    'Qarzning kamayishi',
-                    style: TextStyle(
-                      color: const Color(0xffF5F5F5),
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              Gap(10.h),
-            ],
-          ),
-        );
-      },
+
+
+
+class ShowDialog extends StatefulWidget {
+  final String language;
+  final DebtsModel debts;
+  // final int index;
+
+  const ShowDialog({
+    super.key,
+    required this.language,
+    required this.debts,
+    // required this.index,
+  });
+
+  @override
+  State<ShowDialog> createState() => _DebtDismissibleHiveState();
+}
+
+class _DebtDismissibleHiveState extends State<ShowDialog> {
+  late final TextEditingController _amountController;
+  late final TextEditingController _commentController;
+  late final TextEditingController _dateController;
+  DateTime _date = DateTime.now();
+  String selectedAction = 'increase';
+  num? _totalMoney;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController = TextEditingController();
+    _commentController = TextEditingController();
+    _dateController = TextEditingController(
+      text: _formatDate(DateTime.now()),
     );
   }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _commentController.dispose();
+    _dateController.dispose();
+    super.dispose();
+  }
+
+  String _formatDate(DateTime date) {
+    if (widget.language == 'eng') {
+      return DateFormat.yMMMMEEEEd('en_US').format(date);
+    } else if (widget.language == 'rus') {
+      return DateFormat.yMMMMEEEEd('ru_RU').format(date);
+    } else {
+      return DateFormat.yMMMMEEEEd('uz_UZ').format(date);
+    }
+  }
+
+  void _calculateMoney() {
+    final inputAmount =
+        num.tryParse(_amountController.text.pickOnlyNumber()) ?? 0;
+    _totalMoney = selectedAction == 'increase'
+        ? widget.debts.money! + inputAmount
+        : widget.debts.money! - inputAmount;
+  }
+
+ 
+  
+  Future<void> _submit() async {
+  final detail = DebtsDetailModel(
+    fulName: widget.debts.name,
+    date: _date,
+    detailComment: _commentController.text,
+    detailAmount: selectedAction == 'increase'
+        ? num.tryParse(_amountController.text.pickOnlyNumber())
+        : 0,
+    removDetailAmount: selectedAction == 'decrease'
+        ? num.tryParse(_amountController.text.pickOnlyNumber())
+        : 0,
+  );
+
+  // Agar detail null bo‘lsa, yangi ro‘yxat yaratamiz
+  widget.debts.detail ??= [];
+
+  widget.debts.detail!.add(detail);
+
+  // Keyinchalik Hive’da saqlash uchun
+  await widget.debts.save();
+}
+
+
+  Future<void> _saveChanges() async {
+    if (_totalMoney == null) return;
+
+    widget.debts.money = _totalMoney!;
+    await widget.debts.save(); // mana shu yerda index yoki keyni kerak qilmaydi
+  }
+
+  Future<void> _handleDatePicker() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime(2025),
+      lastDate: DateTime(2026),
+    );
+    if (date != null) {
+      setState(() {
+        _date = date;
+        _dateController.text = _formatDate(date);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(),
+      child: Material(
+        color: Colors.transparent,
+        child: Center(
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              padding: EdgeInsets.all(22.w),
+              decoration: BoxDecoration(
+                color: AppColors.another,
+                borderRadius: BorderRadius.circular(5.r),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black38,
+                    blurRadius: 12,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${widget.debts.debt == 'get' ? (widget.language == 'eng' ? 'Debtor' : 'Qarzdor') : (widget.language == 'eng' ? 'I owe' : 'Qarzdorman')}: ${widget.debts.name}",
+                    style: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    "Umumiy Qarz: ${widget.debts.money.toMoney()} so'm",
+                    style: TextStyle(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white),
+                  ),
+                  Gap(30.h),
+                  _buildTextField(
+                      _amountController,
+                      widget.language == 'eng'
+                          ? 'Enter Amount'
+                          : 'Yangi qarz kiriting',
+                      TextInputType.number,
+                      [InputFormatters.moneyFormatter]),
+                  Gap(7.h),
+                  TextButton(
+                    onPressed: _handleDatePicker,
+                    child: Row(
+                      children: [
+                        Icon(Icons.date_range,
+                            size: 25.sp, color: Colors.white),
+                        Gap(5.w),
+                        Text(_dateController.text,
+                            style: TextStyle(
+                                fontSize: 17.sp,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                  Gap(7.h),
+                  _buildTextField(
+                      _commentController,
+                      widget.language == 'eng' ? 'Comment' : 'Izoh',
+                      TextInputType.text,
+                      null),
+                  Gap(30.h),
+                  _buildRadioButtons(),
+                  SizedBox(height: 20.h),
+                  _buildActionButtons(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hintText,
+      TextInputType keyboardType, List<TextInputFormatter>? formatters) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: formatters,
+      style: TextStyle(fontSize: 16.sp, color: Colors.white),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: const TextStyle(color: Colors.white60),
+        filled: true,
+        fillColor: Colors.white12,
+        contentPadding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRadioButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: RadioListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+                widget.language == 'eng'
+                    ? 'Increase'
+                    : widget.language == 'rus'
+                        ? 'Увеличить'
+                        : 'Oshirish',
+                style: const TextStyle(color: Colors.white)),
+            value: 'increase',
+            groupValue: selectedAction,
+            onChanged: (value) =>
+                setState(() => selectedAction = value.toString()),
+          ),
+        ),
+        Expanded(
+          child: RadioListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+                widget.language == 'eng'
+                    ? 'Decrease'
+                    : widget.language == 'rus'
+                        ? 'Уменьшить'
+                        : 'Kamaytirish',
+                style: const TextStyle(color: Colors.white)),
+            value: 'decrease',
+            groupValue: selectedAction,
+            onChanged: (value) =>
+                setState(() => selectedAction = value.toString()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(widget.language == 'eng' ? 'Cancel' : 'Bekor qilish',
+              style: TextStyle(fontSize: 19.sp, color: Colors.white)),
+        ),
+        SizedBox(width: 10.w),
+        TextButton(
+          onPressed: () async {
+            _calculateMoney();
+            await _submit();
+            await _saveChanges();
+            if (mounted) {
+              Navigator.of(context).pop();
+            }
+          },
+          child: Text(widget.language == 'eng' ? 'Save' : 'Saqlash',
+              style: TextStyle(fontSize: 19.sp, color: Colors.white)),
+        ),
+      ],
+    );
+  }
+}
+
+Future<void> showShowDialogHive(
+  BuildContext context,
+  String language,
+  DebtsModel debt,
+) {
+  return showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) =>
+        ShowDialog(language: language, debts: debt,),
+  );
 }
