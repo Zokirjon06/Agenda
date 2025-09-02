@@ -10,9 +10,11 @@ import 'package:agenda/layers/presentation/widget/my_floatinAcshinButton.dart';
 import 'package:agenda/layers/presentation/widget/my_textFormFiled.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/src/foundation/change_notifier.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
@@ -48,7 +50,8 @@ class _TaskListHiveScreenPageState extends State<TaskListHiveScreenPage> {
     _quickInformationController = TextEditingController();
     super.initState();
   }
-
+  
+  // _submit1
   Future<void> _submit1() async {
     if (_quickInformationController.text.isNotEmpty) {
       try {
@@ -323,8 +326,10 @@ class _TaskListHiveScreenPageState extends State<TaskListHiveScreenPage> {
                         ? IconButton(
                             icon: const Icon(Icons.check),
                             onPressed: () {
-                              _enable = false;
+                              setState(() {
+                                _enable = false;
                               _submit1();
+                              });
                               _quickInformationController.clear();
                               value.isEmpty;
                               _focusNode.unfocus();
@@ -343,7 +348,12 @@ class _TaskListHiveScreenPageState extends State<TaskListHiveScreenPage> {
   }
 
   Widget _buildBody() {
-    List<TaskModelHive> tasks = getAllTasksFromHive();
+    // List<TaskModelHive> tasks = getAllTasksFromHive();
+    final task = Hive.box<TaskModelHive>('tasksHiveBox');
+    return ValueListenableBuilder(
+      valueListenable: task.listenable(),
+      builder: (context, Box<TaskModelHive> taskBos, _) {
+        List<TaskModelHive> tasks = taskBos.values.toList();
 
     if (tasks.isEmpty) {
       return const Expanded(
@@ -384,6 +394,7 @@ class _TaskListHiveScreenPageState extends State<TaskListHiveScreenPage> {
         },
       ),
     );
+  });
   }
 
   Widget _buildItem(TaskModelHive task) {
@@ -454,3 +465,4 @@ class _TaskListHiveScreenPageState extends State<TaskListHiveScreenPage> {
     );
   }
 }
+

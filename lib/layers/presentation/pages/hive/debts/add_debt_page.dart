@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:agenda/layers/domain/models/hive_model/debts/debts_model.dart';
 import 'package:agenda/layers/presentation/extension/extension.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 // ------------------------------------------------------------
 // AddDebtPage
@@ -78,15 +80,15 @@ class _AddDebtPageState extends State<AddDebtPage> {
   // function
  Future<void> _submit() async {
   try {
-    // Hive.openBox<DebtsModel>('debtsBox');
     final debtsBox = Hive.box<DebtsModel>('debtsBox');
-
+    final randomId = Random().nextInt(1000000).toString();
     final debt = DebtsModel(
       name: _nameController.text.trim(),
       date: _date,
       goal: _goalController.text.trim(),
       money: num.tryParse(_amountMoneyController.text.pickOnlyNumber()) ?? 0,
       debt: debtor ? 'get' : 'owe',
+      id: randomId,
     );
 
     await debtsBox.add(debt); // Hive-ga qo‘shish

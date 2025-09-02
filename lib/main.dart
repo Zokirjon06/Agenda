@@ -1,10 +1,12 @@
 import 'package:agenda/firebase_options.dart';
+import 'package:agenda/layers/data/services/notification_service.dart';
 import 'package:agenda/layers/domain/auth/repository/login/login_repository_impl.dart';
 import 'package:agenda/layers/domain/auth/repository/register/register_repository_impl.dart';
 import 'package:agenda/layers/domain/auth/usecase/login_usecase.dart';
 import 'package:agenda/layers/domain/auth/usecase/register_usecase.dart';
 import 'package:agenda/layers/application/auth/register/register_cubit.dart';
 import 'package:agenda/layers/domain/models/hive_model/debts/debts_model.dart';
+import 'package:agenda/layers/domain/models/hive_model/expenses/expense_model.dart';
 import 'package:agenda/layers/domain/models/hive_model/vois_recording_model/vois_recording_model.dart';
 import 'package:agenda/layers/domain/models/hive_model/tasks/task_model_hive.dart';
 import 'package:agenda/layers/presentation/pages/hive/helpers/hive_initialization.dart';
@@ -45,6 +47,12 @@ void main() async {
   if (!Hive.isAdapterRegistered(4)) {
     Hive.registerAdapter(VoiceRecordingModelAdapter());
   }
+  if (!Hive.isAdapterRegistered(4)) {
+    Hive.registerAdapter(ExpenseAdapter());
+  }
+
+  // notication
+  await NotificationService().init();
 
   // Initialize Hive boxes and create default data
   await HiveInitialization.initializeBoxes();

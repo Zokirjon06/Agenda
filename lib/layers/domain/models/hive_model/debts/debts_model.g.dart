@@ -21,7 +21,7 @@ class DebtsModelAdapter extends TypeAdapter<DebtsModel> {
       money: fields[1] as num?,
       goal: fields[2] as String?,
       date: fields[3] as DateTime?,
-      docId: fields[4] as String,
+      id: fields[4] as String,
       status: fields[5] as int?,
       debt: fields[6] as String?,
       detail: (fields[7] as List?)?.cast<DebtsDetailModel>(),
@@ -41,7 +41,7 @@ class DebtsModelAdapter extends TypeAdapter<DebtsModel> {
       ..writeByte(3)
       ..write(obj.date)
       ..writeByte(4)
-      ..write(obj.docId)
+      ..write(obj.id)
       ..writeByte(5)
       ..write(obj.status)
       ..writeByte(6)
@@ -77,7 +77,7 @@ class DebtsDetailModelAdapter extends TypeAdapter<DebtsDetailModel> {
       detailAmount: fields[3] as num?,
       removDetailAmount: fields[4] as num?,
       date: fields[1] as DateTime?,
-      docId: fields[5] as String,
+      id: fields[5] as String,
     );
   }
 
@@ -96,7 +96,7 @@ class DebtsDetailModelAdapter extends TypeAdapter<DebtsDetailModel> {
       ..writeByte(4)
       ..write(obj.removDetailAmount)
       ..writeByte(5)
-      ..write(obj.docId);
+      ..write(obj.id);
   }
 
   @override

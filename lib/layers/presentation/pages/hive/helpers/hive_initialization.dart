@@ -1,3 +1,4 @@
+import 'package:agenda/layers/domain/models/hive_model/expenses/expense_model.dart';
 import 'package:agenda/layers/domain/models/hive_model/tasks/task_model_hive.dart';
 import 'package:agenda/layers/domain/models/hive_model/debts/debts_model.dart';
 import 'package:hive/hive.dart';
@@ -9,6 +10,7 @@ class HiveInitialization {
   static const String taskTypesBoxName = 'taskTypesHiveBox';
   static const String debtsBoxName = 'debtsBox';
   static const String debtsDetailBoxName = 'debtsDetailBox';
+  static const String expenseBoxName = 'expensesBox';
 
   /// Initialize all Hive boxes
   static Future<void> initializeBoxes() async {
@@ -18,6 +20,7 @@ class HiveInitialization {
       await Hive.openBox<TaskTypeModelHive>(taskTypesBoxName);
       await Hive.openBox<DebtsModel>(debtsBoxName);
       await Hive.openBox<DebtsDetailModel>(debtsDetailBoxName);
+      await Hive.openBox<Expense>(expenseBoxName);
 
       // Create default task types if none exist
       await _createDefaultTaskTypes();
@@ -168,6 +171,9 @@ class HiveInitialization {
       return [];
     }
   }
+
+  
+
 
   /// Add a new task
   static Future<void> addTask(TaskModelHive task) async {

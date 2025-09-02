@@ -17,7 +17,7 @@ class DebtsModel extends HiveObject {
   DateTime? date;
 
   @HiveField(4)
-  String docId;
+  String id;
 
   @HiveField(5)
   int? status;
@@ -33,7 +33,7 @@ class DebtsModel extends HiveObject {
     this.money,
     this.goal,
     this.date,
-    this.docId = '',
+    this.id = '',
     this.status = 0,
     this.debt,
     this.detail,
@@ -58,7 +58,7 @@ class DebtsDetailModel extends HiveObject {
   num? removDetailAmount;
 
   @HiveField(5)
-  String docId;
+  String id;
 
   DebtsDetailModel({
     this.fulName,
@@ -66,6 +66,6 @@ class DebtsDetailModel extends HiveObject {
     this.detailAmount = 0,
     this.removDetailAmount = 0,
     this.date,
-    this.docId = '',
+    this.id = '',
   });
 }

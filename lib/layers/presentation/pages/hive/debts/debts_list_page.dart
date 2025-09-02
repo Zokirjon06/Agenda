@@ -246,7 +246,7 @@ class DebtsItem extends StatelessWidget {
     final randomColor = Colors.primaries[hash % Colors.primaries.length];
 
     Widget listTile = Dismissible(
-      key: ValueKey(debts.docId),
+      key: ValueKey(debts.id),
       direction: DismissDirection.endToStart,
       confirmDismiss: (direction) async {
         showDebtDismissibleHive(context, language, debts, debts.key);

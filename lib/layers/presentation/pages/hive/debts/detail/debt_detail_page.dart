@@ -1,6 +1,7 @@
 import 'package:agenda/layers/domain/models/hive_model/debts/debts_model.dart';
 import 'package:agenda/layers/presentation/extension/extension.dart';
 import 'package:agenda/layers/presentation/helpers/input_formatter.dart';
+import 'package:agenda/layers/presentation/helpers/snackbar_message.dart';
 import 'package:agenda/layers/presentation/pages/style/app_colors.dart';
 import 'package:agenda/layers/presentation/widget/appBar_leading_icon.dart';
 import 'package:agenda/layers/presentation/widget/divders.dart';
@@ -10,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
 class DebtDetailPage extends StatefulWidget {
@@ -24,10 +25,13 @@ class DebtDetailPage extends StatefulWidget {
 
 class _DebtDetailPageState extends State<DebtDetailPage> {
   late final DateFormat _allDate;
+  final bool change = false;
+
 
   // Init state
   @override
   void initState() {
+    change == false;
     _allDate = DateFormat.yMMMMd(widget.language == 'eng'
         ? 'en_US'
         : widget.language == 'rus'
@@ -90,16 +94,9 @@ class _DebtDetailPageState extends State<DebtDetailPage> {
     // If the user confirmed the deletion
     if (confirmed == true) {
       try {
-        // delete debtor
-        // final box = Hive.box<DebtsDetailModel>("debtsDetailBox");
-        // if (box.values.contains(widget.debt)) {
-        // box.delete(widget.debt.detail);
-        // }
-
-        //
         await widget.debt.delete();
-        _showSnackBar(
-          widget.language == 'eng'
+        showMessage(context: context,
+         message: widget.language == 'eng'
               ? 'Task deleted successfully'
               : widget.language == 'rus'
                   ? 'Задача успешно удалена'
@@ -110,23 +107,15 @@ class _DebtDetailPageState extends State<DebtDetailPage> {
           Navigator.of(context).pop();
         }
       } catch (e) {
-        _showSnackBar("Xato: ${e.toString()}");
+        showMessage(message: e.toString(), context: context);
       }
     }
   }
-  
-
-  // Show snackbar
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: AppbarLeadingIcon(),
+        leading: const AppbarLeadingIcon(),
         titleSpacing: 0,
         title: Text(widget.debt.name!.trim(),
             style: const TextStyle(color: Colors.white)),
@@ -149,7 +138,7 @@ class _DebtDetailPageState extends State<DebtDetailPage> {
         backgroundColor: AppColors.appBar,
         elevation: 3,
         shadowColor: Colors.black,
-        systemOverlayStyle: SystemUiOverlayStyle(
+        systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor:
               AppColors.standartColor, // Status bar rangini o'zgartirish
           statusBarIconBrightness:
@@ -228,7 +217,7 @@ class _DebtDetailPageState extends State<DebtDetailPage> {
             height: 1.h,
             color: AppColors.deviderDark,
           ),
-          _getDebtorDetail()
+         change == false? _getDebtorDetail() : _getDebtorDetailChange()
         ],
       ),
     );
@@ -252,6 +241,34 @@ class _DebtDetailPageState extends State<DebtDetailPage> {
       ),
     );
   }
+ Widget _getDebtorDetailChange() {
+  return ValueListenableBuilder(
+    valueListenable: Hive.box<DebtsDetailModel>('debtsDetailBox').listenable(),
+    builder: (context, Box<DebtsDetailModel> box, _) {
+      List<DebtsDetailModel> debt = box.values.toList();
+
+      if (debt.isEmpty) {
+        return const Center();
+      }
+
+      // Sana bo‘yicha sort
+      debt.sort((a, b) => a.date!.compareTo(b.date!));
+
+      return Expanded(
+        child: ListView.builder(
+          itemCount: debt.length,
+          itemBuilder: (context, index) {
+            final item = debt[index];
+            return item.detailAmount! > 0
+                ? _buildDebtorsItem(item, index == 0)
+                : _buildDebtorsItem1(item, index == 0);
+          },
+        ),
+      );
+    },
+  );
+}
+
 
   Widget _buildDebtorsItem(DebtsDetailModel debt, bool text) {
     return Column(
@@ -312,14 +329,18 @@ class _DebtDetailPageState extends State<DebtDetailPage> {
             ],
           ),
         ),
-        Dividers(
+        const Dividers(
           lightMode: true,
           inden: true,
         )
       ],
     );
   }
+  
 
+  // -------------------------------------------------------
+  // _buildDebtorsItem1
+  // -------------------------------------------------------
   Widget _buildDebtorsItem1(DebtsDetailModel debt, bool text) {
     return Column(
       children: [
@@ -381,7 +402,7 @@ class _DebtDetailPageState extends State<DebtDetailPage> {
             ],
           ),
         ),
-        Dividers(
+        const Dividers(
           lightMode: true,
           inden: true,
         )
@@ -454,10 +475,10 @@ class _DebtDismissibleHiveState extends State<ShowDialog> {
   }
 
  
-  
+  //
   Future<void> _submit() async {
   final detail = DebtsDetailModel(
-    fulName: widget.debts.name,
+    id: widget.debts.id,
     date: _date,
     detailComment: _commentController.text,
     detailAmount: selectedAction == 'increase'
@@ -469,22 +490,28 @@ class _DebtDismissibleHiveState extends State<ShowDialog> {
   );
 
   // Agar detail null bo‘lsa, yangi ro‘yxat yaratamiz
-  widget.debts.detail ??= [];
+  // widget.debts.detail ??= [];
 
-  widget.debts.detail!.add(detail);
+ if(_amountController.text.isNotEmpty){
+  setState(() {
+    widget.debts.detail!.add(detail);
+ });
+ }
 
   // Keyinchalik Hive’da saqlash uchun
   await widget.debts.save();
 }
 
-
+  // _saveChanges
   Future<void> _saveChanges() async {
     if (_totalMoney == null) return;
 
     widget.debts.money = _totalMoney!;
     await widget.debts.save(); // mana shu yerda index yoki keyni kerak qilmaydi
   }
+  
 
+  // _handleDatePicker
   Future<void> _handleDatePicker() async {
     final date = await showDatePicker(
       context: context,

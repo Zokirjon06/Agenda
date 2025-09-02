@@ -32,19 +32,19 @@ class _HomeScreenHivePageState extends State<HomeScreenHivePage> {
   @override
   void initState() {
     super.initState();
-    _initializeHiveBoxes();
+    // _initializeHiveBoxes();
   }
 
-  Future<void> _initializeHiveBoxes() async {
-    try {
-      await Hive.openBox<TaskModelHive>('tasksHiveBox');
-      await Hive.openBox<TaskTypeModelHive>('taskTypesHiveBox');
-      await Hive.openBox<DebtsModel>('debtsBox');
-      await Hive.openBox<DebtsDetailModel>('debtsDetailBox');
-    } catch (e) {
-      debugPrint('Error initializing Hive boxes: $e');
-    }
-  }
+  // Future<void> _initializeHiveBoxes() async {
+  //   try {
+  //     await Hive.openBox<TaskModelHive>('tasksHiveBox');
+  //     await Hive.openBox<TaskTypeModelHive>('taskTypesHiveBox');
+  //     await Hive.openBox<DebtsModel>('debtsBox');
+  //     await Hive.openBox<DebtsDetailModel>('debtsDetailBox');
+  //   } catch (e) {
+  //     debugPrint('Error initializing Hive boxes: $e');
+  //   }
+  // }
 
   List<DebtsModel> getUserDebtsFromHive() {
     try {
